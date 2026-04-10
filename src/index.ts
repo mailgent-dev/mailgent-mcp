@@ -59,8 +59,31 @@ server.registerTool("identity.whoami", {
   return status === 200 ? ok(data) : fail("Failed to get identity", data);
 });
 
-// Note: identity.sign and identity.verify require direct DB access and are only
-// available via the hosted MCP server at https://api.loomal.ai/mcp
+server.registerTool("identity.sign", {
+  title: "Sign Data",
+  description: "Sign arbitrary data with this identity's Ed25519 private key. Returns the signature and the identity's DID.",
+  inputSchema: {
+    data: z.string().describe("Base64-encoded data to sign"),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ data }) => {
+  const { status, data: res } = await api("POST", "/whoami/sign", { data });
+  return status === 200 ? ok(res) : fail("Failed to sign data", res);
+});
+
+server.registerTool("identity.verify", {
+  title: "Verify Signature",
+  description: "Verify a signature against any did:web identity. Resolves the DID Document and checks the Ed25519 signature.",
+  inputSchema: {
+    data: z.string().describe("Base64-encoded original data"),
+    signature: z.string().describe("Base64-encoded signature to verify"),
+    did: z.string().describe("DID of the signer (e.g., did:web:api.loomal.ai:identities:id-abc123)"),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ data, signature, did }) => {
+  const { status, data: res } = await api("POST", "/whoami/verify", { data, signature, did });
+  return status === 200 ? ok(res) : fail("Failed to verify signature", res);
+});
 
 // ============================================
 // MAIL TOOLS
@@ -128,6 +151,36 @@ server.registerTool("mail.get_message", {
   return status === 200 ? ok(data) : fail("Failed to get message", data);
 });
 
+server.registerTool("mail.get_attachment", {
+  title: "Get Attachment",
+  description: "Download the contents of an email attachment as base64-encoded data. Use mail.get_message or mail.get_thread first to find attachment IDs and metadata.",
+  inputSchema: {
+    messageId: z.string().describe("The messageId that owns the attachment"),
+    attachmentId: z.string().describe("The attachmentId from a previous mail.get_message call"),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ messageId, attachmentId }) => {
+  const res = await fetch(`${API_BASE}/v0/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`, {
+    headers: { Authorization: `Bearer ${API_KEY}` },
+  });
+  if (res.status !== 200) {
+    const data = await res.json().catch(() => ({}));
+    return fail("Failed to get attachment", data);
+  }
+  const buf = Buffer.from(await res.arrayBuffer());
+  const contentType = res.headers.get("content-type") || "application/octet-stream";
+  const disposition = res.headers.get("content-disposition") || "";
+  const filenameMatch = disposition.match(/filename="(.+?)"/);
+  return ok({
+    attachmentId,
+    messageId,
+    filename: filenameMatch?.[1] || "attachment",
+    contentType,
+    size: buf.length,
+    data: buf.toString("base64"),
+  });
+});
+
 server.registerTool("mail.update_labels", {
   title: "Update Labels",
   description: "Add or remove labels on a message",
@@ -140,6 +193,20 @@ server.registerTool("mail.update_labels", {
 }, async ({ messageId, addLabels, removeLabels }) => {
   const { status, data } = await api("PATCH", `/messages/${encodeURIComponent(messageId)}`, { addLabels, removeLabels });
   return status === 200 ? ok(data) : fail("Failed to update labels", data);
+});
+
+server.registerTool("mail.update_thread_labels", {
+  title: "Update Thread Labels",
+  description: "Add or remove labels on a thread (e.g. 'starred', 'important', 'archived', or custom labels). Thread labels are separate from message labels.",
+  inputSchema: {
+    threadId: z.string().describe("The threadId to update"),
+    addLabels: z.array(z.string()).optional().describe("Labels to add to the thread"),
+    removeLabels: z.array(z.string()).optional().describe("Labels to remove from the thread"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+}, async ({ threadId, addLabels, removeLabels }) => {
+  const { status, data } = await api("PATCH", `/threads/${threadId}`, { addLabels, removeLabels });
+  return status === 200 ? ok(data) : fail("Failed to update thread labels", data);
 });
 
 server.registerTool("mail.delete_message", {
