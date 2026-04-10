@@ -1,5 +1,5 @@
 {
-  "name": "loomal-mcp",
+  "name": "@loomal/mcp",
   "version": "0.1.0",
   "description": "MCP server for Loomal — Identity infrastructure for AI agents",
   "type": "module",
@@ -35,5 +35,8 @@
     "url": "https://github.com/loomal-ai/loomal-mcp.git"
   },
   "homepage": "https://loomal.ai",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }
