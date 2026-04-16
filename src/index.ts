@@ -346,12 +346,13 @@ server.registerTool("vault.totp", {
 
 server.registerTool("vault.store", {
   title: "Store Credential",
-  description: "Store or update an encrypted credential in the vault",
+  description: "Store or update an encrypted credential in the vault. Prefer the typed helpers (vault.storeApiKey, vault.storeCard, vault.storeShippingAddress) when they fit.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'salesforce', 'prod-db')"),
     type: z.enum([
       "LOGIN", "API_KEY", "OAUTH", "TOTP", "SSH_KEY",
-      "DATABASE", "SMTP", "AWS", "CERTIFICATE", "CUSTOM",
+      "DATABASE", "SMTP", "AWS", "CERTIFICATE",
+      "CARD", "SHIPPING_ADDRESS", "CUSTOM",
     ]).describe("Credential type"),
     data: z.record(z.string(), z.any()).describe("Secret fields to encrypt (e.g. { key: 'sk_...' })"),
     metadata: z.record(z.string(), z.any()).optional().describe("Non-secret metadata for display (e.g. { service: 'stripe' })"),
@@ -361,6 +362,74 @@ server.registerTool("vault.store", {
 }, async ({ name, type, data, metadata, expiresAt }) => {
   const { status, data: res } = await api("PUT", `/vault/${encodeURIComponent(name)}`, { type, data, metadata, expiresAt });
   return status === 200 ? ok(res) : fail("Failed to store credential", res);
+});
+
+server.registerTool("vault.storeApiKey", {
+  title: "Store API Key",
+  description: "Store an API_KEY credential. Use just 'secret' for single-key services (e.g. sk_live_...), or both 'clientId' and 'secret' for OAuth-style client credentials.",
+  inputSchema: {
+    name: z.string().describe("Credential name (e.g. 'stripe', 'twitter')"),
+    secret: z.string().describe("The API key / secret"),
+    clientId: z.string().optional().describe("OAuth client ID (omit for single-secret keys)"),
+    expiresAt: z.string().optional().describe("Expiry date (ISO 8601)"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ name, secret, clientId, expiresAt }) => {
+  const data = clientId ? { clientId, secret } : { key: secret };
+  const metadata: Record<string, unknown> = { prefix: secret.slice(0, 8) + "..." };
+  if (clientId) metadata.clientId = clientId;
+  const { status, data: res } = await api("PUT", `/vault/${encodeURIComponent(name)}`, { type: "API_KEY", data, metadata, expiresAt });
+  return status === 200 ? ok(res) : fail("Failed to store API key", res);
+});
+
+server.registerTool("vault.storeCard", {
+  title: "Store Card",
+  description: "Store a payment card as an encrypted credential. This is password-manager-style secret storage — the vault does NOT charge the card.",
+  inputSchema: {
+    name: z.string().describe("Credential name (e.g. 'personal-visa')"),
+    cardholder: z.string().describe("Cardholder name"),
+    number: z.string().describe("Card number"),
+    expMonth: z.string().describe("Expiration month (MM)"),
+    expYear: z.string().describe("Expiration year (YYYY)"),
+    cvc: z.string().describe("CVC / CVV"),
+    zip: z.string().optional().describe("Billing ZIP / postal code"),
+    brand: z.string().optional().describe("Card brand (Visa, Mastercard, etc.) — stored in metadata for display"),
+    expiresAt: z.string().optional().describe("Credential expiry date (ISO 8601)"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ name, cardholder, number, expMonth, expYear, cvc, zip, brand, expiresAt }) => {
+  const normalized = number.replace(/\s+/g, "");
+  const data: Record<string, unknown> = { cardholder, number, expMonth, expYear, cvc };
+  if (zip) data.zip = zip;
+  const metadata: Record<string, unknown> = { last4: normalized.slice(-4) };
+  if (brand) metadata.brand = brand;
+  const { status, data: res } = await api("PUT", `/vault/${encodeURIComponent(name)}`, { type: "CARD", data, metadata, expiresAt });
+  return status === 200 ? ok(res) : fail("Failed to store card", res);
+});
+
+server.registerTool("vault.storeShippingAddress", {
+  title: "Store Shipping Address",
+  description: "Store a shipping / mailing address as an encrypted credential.",
+  inputSchema: {
+    name: z.string().describe("Credential name (e.g. 'home', 'office')"),
+    recipient: z.string().describe("Recipient name"),
+    line1: z.string().describe("Address line 1"),
+    line2: z.string().optional().describe("Address line 2"),
+    city: z.string().describe("City"),
+    state: z.string().describe("State / region"),
+    postcode: z.string().describe("Postcode / ZIP"),
+    country: z.string().describe("Country code (ISO 3166-1 alpha-2, e.g. 'US')"),
+    phone: z.string().optional().describe("Phone number"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ name, recipient, line1, line2, city, state, postcode, country, phone }) => {
+  const data: Record<string, unknown> = {
+    name: recipient, line1, city, state, postcode, country: country.toUpperCase(),
+  };
+  if (line2) data.line2 = line2;
+  if (phone) data.phone = phone;
+  const { status, data: res } = await api("PUT", `/vault/${encodeURIComponent(name)}`, { type: "SHIPPING_ADDRESS", data });
+  return status === 200 ? ok(res) : fail("Failed to store shipping address", res);
 });
 
 server.registerTool("vault.delete", {
