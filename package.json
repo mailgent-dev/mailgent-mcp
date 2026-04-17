@@ -1,6 +1,6 @@
 {
   "name": "@loomal/mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server for Loomal — Identity infrastructure for AI agents",
   "type": "module",
   "bin": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
-    "dev": "npx ts-node --esm src/index.ts"
+    "dev": "npx ts-node --esm src/index.ts",
+    "test": "node --test tests/"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",

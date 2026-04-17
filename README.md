@@ -58,7 +58,8 @@ Get your API key from [console.loomal.ai](https://console.loomal.ai).
 |------|-------------|
 | `vault.list` | List stored credentials |
 | `vault.get` | Get a decrypted credential |
-| `vault.totp` | Generate a TOTP code |
+| `vault.totp` | Generate a TOTP code (response includes `backupCodesRemaining`) |
+| `vault.totp_use_backup` | Atomically consume one TOTP backup code |
 | `vault.store` | Store or update a credential (generic — any type) |
 | `vault.storeApiKey` | Store an API key (single secret or OAuth client+secret pair) |
 | `vault.storeCard` | Store a payment card — encrypted at rest, vault does not process payments |

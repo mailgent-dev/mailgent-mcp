@@ -334,7 +334,7 @@ server.registerTool("vault.get", {
 
 server.registerTool("vault.totp", {
   title: "Get TOTP Code",
-  description: "Generate the current 6-digit TOTP code. Works on any credential that has a TOTP secret (standalone TOTP type or any credential with a 'totp' field).",
+  description: "Generate the current 6-digit TOTP code. Works on any credential that has a TOTP secret. Response also includes backupCodesRemaining (count of stored single-use recovery codes); call vault.totp_use_backup when the live TOTP is unavailable.",
   inputSchema: {
     name: z.string().describe("Credential name with TOTP"),
   },
@@ -342,6 +342,18 @@ server.registerTool("vault.totp", {
 }, async ({ name }) => {
   const { status, data } = await api("GET", `/vault/${encodeURIComponent(name)}/totp`);
   return status === 200 ? ok(data) : fail("Failed to get TOTP", data);
+});
+
+server.registerTool("vault.totp_use_backup", {
+  title: "Use TOTP Backup Code",
+  description: "Atomically consume one single-use TOTP backup code. The popped code is moved into data.usedBackupCodes for audit. Use when the live TOTP code is unavailable (clock skew, lost device).",
+  inputSchema: {
+    name: z.string().describe("Credential name with backup codes"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+}, async ({ name }) => {
+  const { status, data } = await api("POST", `/vault/${encodeURIComponent(name)}/totp/backup`);
+  return status === 200 ? ok(data) : fail("Failed to consume backup code", data);
 });
 
 server.registerTool("vault.store", {
