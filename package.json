@@ -1,6 +1,6 @@
 {
   "name": "@loomal/mcp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "MCP server for Loomal — Identity infrastructure for AI agents",
   "type": "module",
   "bin": {
