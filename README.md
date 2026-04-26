@@ -36,35 +36,35 @@ Get your API key from [console.loomal.ai](https://console.loomal.ai).
 
 | Tool | Description |
 |------|-------------|
-| `mail.whoami` | Get identity info — name, email, scopes |
+| `identity_whoami` | Get identity info — name, email, scopes |
 
 ### Email
 
 | Tool | Description |
 |------|-------------|
-| `mail.send` | Send email |
-| `mail.reply` | Reply to a message |
-| `mail.list_messages` | List inbox messages |
-| `mail.get_message` | Get a specific message |
-| `mail.update_labels` | Update message labels |
-| `mail.delete_message` | Delete a message |
-| `mail.list_threads` | List conversation threads |
-| `mail.get_thread` | Get a full thread |
-| `mail.delete_thread` | Delete a thread |
+| `mail_send` | Send email |
+| `mail_reply` | Reply to a message |
+| `mail_list_messages` | List inbox messages |
+| `mail_get_message` | Get a specific message |
+| `mail_update_labels` | Update message labels |
+| `mail_delete_message` | Delete a message |
+| `mail_list_threads` | List conversation threads |
+| `mail_get_thread` | Get a full thread |
+| `mail_delete_thread` | Delete a thread |
 
 ### Vault
 
 | Tool | Description |
 |------|-------------|
-| `vault.list` | List stored credentials |
-| `vault.get` | Get a decrypted credential |
-| `vault.totp` | Generate a TOTP code (response includes `backupCodesRemaining`) |
-| `vault.totp_use_backup` | Atomically consume one TOTP backup code |
-| `vault.store` | Store or update a credential (generic — any type) |
-| `vault.storeApiKey` | Store an API key (single secret or OAuth client+secret pair) |
-| `vault.storeCard` | Store a payment card — encrypted at rest, vault does not process payments |
-| `vault.storeShippingAddress` | Store a shipping / mailing address |
-| `vault.delete` | Delete a credential |
+| `vault_list` | List stored credentials |
+| `vault_get` | Get a decrypted credential |
+| `vault_totp` | Generate a TOTP code (response includes `backupCodesRemaining`) |
+| `vault_totp_use_backup` | Atomically consume one TOTP backup code |
+| `vault_store` | Store or update a credential (generic — any type) |
+| `vault_storeApiKey` | Store an API key (single secret or OAuth client+secret pair) |
+| `vault_storeCard` | Store a payment card — encrypted at rest, vault does not process payments |
+| `vault_storeShippingAddress` | Store a shipping / mailing address |
+| `vault_delete` | Delete a credential |
 
 ## Multiple Identities
 

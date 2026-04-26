@@ -29,7 +29,7 @@ async function api(method, path, body) {
   return { status: res.status, data };
 }
 
-test("vault.list — returns the test credential", { skip }, async () => {
+test("vault_list — returns the test credential", { skip }, async () => {
   const { status, data } = await api("GET", "/vault");
   assert.equal(status, 200, `unexpected status: ${status}`);
   assert.ok(Array.isArray(data.credentials), "credentials should be an array");
@@ -38,7 +38,7 @@ test("vault.list — returns the test credential", { skip }, async () => {
   assert.equal(found.type, "TOTP");
 });
 
-test("vault.totp — response includes backupCodesRemaining", { skip }, async () => {
+test("vault_totp — response includes backupCodesRemaining", { skip }, async () => {
   const { status, data } = await api("GET", `/vault/${TEST_CRED}/totp`);
   assert.equal(status, 200);
   assert.equal(typeof data.code, "string", "code should be a string");
@@ -48,7 +48,7 @@ test("vault.totp — response includes backupCodesRemaining", { skip }, async ()
   assert.ok(data.backupCodesRemaining >= 0);
 });
 
-test("vault.totp_use_backup — consumes one code, returns it, decrements count", { skip }, async () => {
+test("vault_totp_use_backup — consumes one code, returns it, decrements count", { skip }, async () => {
   const before = await api("GET", `/vault/${TEST_CRED}/totp`);
   assert.equal(before.status, 200);
   const initialCount = before.data.backupCodesRemaining;
@@ -67,7 +67,7 @@ test("vault.totp_use_backup — consumes one code, returns it, decrements count"
   assert.equal(after.data.backupCodesRemaining, initialCount - 1);
 });
 
-test("vault.totp_use_backup — two consecutive calls return different codes", { skip }, async () => {
+test("vault_totp_use_backup — two consecutive calls return different codes", { skip }, async () => {
   const before = await api("GET", `/vault/${TEST_CRED}/totp`);
   if (before.data.backupCodesRemaining < 2) return; // not enough left
 
@@ -78,7 +78,7 @@ test("vault.totp_use_backup — two consecutive calls return different codes", {
   assert.notEqual(a.data.code, b.data.code, "consecutive backup codes must differ (single-use)");
 });
 
-test("vault.totp_use_backup — 400 when no codes remain", { skip }, async () => {
+test("vault_totp_use_backup — 400 when no codes remain", { skip }, async () => {
   // Drain whatever is left
   let safety = 20;
   while (safety-- > 0) {
@@ -91,13 +91,13 @@ test("vault.totp_use_backup — 400 when no codes remain", { skip }, async () =>
   assert.equal(data.error, "bad_request");
 });
 
-test("vault.totp_use_backup — 404 for unknown credential", { skip }, async () => {
+test("vault_totp_use_backup — 404 for unknown credential", { skip }, async () => {
   const { status, data } = await api("POST", `/vault/__definitely_not_real__/totp/backup`);
   assert.equal(status, 404);
   assert.equal(data.error, "not_found");
 });
 
-test("vault.totp — usedBackupCodes accumulates in vault.get", { skip }, async () => {
+test("vault_totp — usedBackupCodes accumulates in vault_get", { skip }, async () => {
   const { status, data } = await api("GET", `/vault/${TEST_CRED}`);
   assert.equal(status, 200);
   // Either backupCodes is empty (drained by previous test) or usedBackupCodes is non-empty

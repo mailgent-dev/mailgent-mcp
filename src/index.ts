@@ -153,10 +153,10 @@ server.registerTool("mail_get_message", {
 
 server.registerTool("mail_get_attachment", {
   title: "Get Attachment",
-  description: "Download the contents of an email attachment as base64-encoded data. Use mail.get_message or mail.get_thread first to find attachment IDs and metadata.",
+  description: "Download the contents of an email attachment as base64-encoded data. Use mail_get_message or mail_get_thread first to find attachment IDs and metadata.",
   inputSchema: {
     messageId: z.string().describe("The messageId that owns the attachment"),
-    attachmentId: z.string().describe("The attachmentId from a previous mail.get_message call"),
+    attachmentId: z.string().describe("The attachmentId from a previous mail_get_message call"),
   },
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 }, async ({ messageId, attachmentId }) => {
@@ -322,7 +322,7 @@ server.registerTool("vault_list", {
 
 server.registerTool("vault_get", {
   title: "Get Credential",
-  description: "Retrieve a decrypted credential from the vault. For TOTP credentials, use vault.totp instead to get the code.",
+  description: "Retrieve a decrypted credential from the vault. For TOTP credentials, use vault_totp instead to get the code.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'salesforce', 'hubspot-api')"),
   },
@@ -334,7 +334,7 @@ server.registerTool("vault_get", {
 
 server.registerTool("vault_totp", {
   title: "Get TOTP Code",
-  description: "Generate the current 6-digit TOTP code. Works on any credential that has a TOTP secret. Response also includes backupCodesRemaining (count of stored single-use recovery codes); call vault.totp_use_backup when the live TOTP is unavailable.",
+  description: "Generate the current 6-digit TOTP code. Works on any credential that has a TOTP secret. Response also includes backupCodesRemaining (count of stored single-use recovery codes); call vault_totp_use_backup when the live TOTP is unavailable.",
   inputSchema: {
     name: z.string().describe("Credential name with TOTP"),
   },
@@ -358,7 +358,7 @@ server.registerTool("vault_totp_use_backup", {
 
 server.registerTool("vault_store", {
   title: "Store Credential",
-  description: "Store or update an encrypted credential in the vault. Prefer the typed helpers (vault.storeApiKey, vault.storeCard, vault.storeShippingAddress) when they fit.",
+  description: "Store or update an encrypted credential in the vault. Prefer the typed helpers (vault_storeApiKey, vault_storeCard, vault_storeShippingAddress) when they fit.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'salesforce', 'prod-db')"),
     type: z.enum([
@@ -376,7 +376,7 @@ server.registerTool("vault_store", {
   return status === 200 ? ok(res) : fail("Failed to store credential", res);
 });
 
-server.registerTool("vault.storeApiKey", {
+server.registerTool("vault_storeApiKey", {
   title: "Store API Key",
   description: "Store an API_KEY credential. Use just 'secret' for single-key services (e.g. sk_live_...), or both 'clientId' and 'secret' for OAuth-style client credentials.",
   inputSchema: {
@@ -394,7 +394,7 @@ server.registerTool("vault.storeApiKey", {
   return status === 200 ? ok(res) : fail("Failed to store API key", res);
 });
 
-server.registerTool("vault.storeCard", {
+server.registerTool("vault_storeCard", {
   title: "Store Card",
   description: "Store a payment card as an encrypted credential. This is password-manager-style secret storage — the vault does NOT charge the card.",
   inputSchema: {
@@ -419,7 +419,7 @@ server.registerTool("vault.storeCard", {
   return status === 200 ? ok(res) : fail("Failed to store card", res);
 });
 
-server.registerTool("vault.storeShippingAddress", {
+server.registerTool("vault_storeShippingAddress", {
   title: "Store Shipping Address",
   description: "Store a shipping / mailing address as an encrypted credential.",
   inputSchema: {
