@@ -48,7 +48,7 @@ const server = new McpServer({
 // IDENTITY TOOLS
 // ============================================
 
-server.registerTool("identity.whoami", {
+server.registerTool("identity_whoami", {
   title: "Who Am I",
   description: "Get your agent identity info — name, email, DID, and scopes",
   inputSchema: {},
@@ -59,7 +59,7 @@ server.registerTool("identity.whoami", {
   return status === 200 ? ok(data) : fail("Failed to get identity", data);
 });
 
-server.registerTool("identity.sign", {
+server.registerTool("identity_sign", {
   title: "Sign Data",
   description: "Sign arbitrary data with this identity's Ed25519 private key. Returns the signature and the identity's DID.",
   inputSchema: {
@@ -71,7 +71,7 @@ server.registerTool("identity.sign", {
   return status === 200 ? ok(res) : fail("Failed to sign data", res);
 });
 
-server.registerTool("identity.verify", {
+server.registerTool("identity_verify", {
   title: "Verify Signature",
   description: "Verify a signature against any did:web identity. Resolves the DID Document and checks the Ed25519 signature.",
   inputSchema: {
@@ -89,7 +89,7 @@ server.registerTool("identity.verify", {
 // MAIL TOOLS
 // ============================================
 
-server.registerTool("mail.send", {
+server.registerTool("mail_send", {
   title: "Send Email",
   description: "Send an email from your agent's inbox",
   inputSchema: {
@@ -106,7 +106,7 @@ server.registerTool("mail.send", {
   return status === 201 ? ok(data) : fail("Failed to send", data);
 });
 
-server.registerTool("mail.reply", {
+server.registerTool("mail_reply", {
   title: "Reply to Email",
   description: "Reply to an existing email in a thread",
   inputSchema: {
@@ -120,7 +120,7 @@ server.registerTool("mail.reply", {
   return status === 201 ? ok(data) : fail("Failed to reply", data);
 });
 
-server.registerTool("mail.list_messages", {
+server.registerTool("mail_list_messages", {
   title: "List Messages",
   description: "List emails in your agent's inbox. Returns newest first.",
   inputSchema: {
@@ -139,7 +139,7 @@ server.registerTool("mail.list_messages", {
   return status === 200 ? ok(data) : fail("Failed to list messages", data);
 });
 
-server.registerTool("mail.get_message", {
+server.registerTool("mail_get_message", {
   title: "Get Message",
   description: "Get a specific email by its messageId",
   inputSchema: {
@@ -151,7 +151,7 @@ server.registerTool("mail.get_message", {
   return status === 200 ? ok(data) : fail("Failed to get message", data);
 });
 
-server.registerTool("mail.get_attachment", {
+server.registerTool("mail_get_attachment", {
   title: "Get Attachment",
   description: "Download the contents of an email attachment as base64-encoded data. Use mail.get_message or mail.get_thread first to find attachment IDs and metadata.",
   inputSchema: {
@@ -181,7 +181,7 @@ server.registerTool("mail.get_attachment", {
   });
 });
 
-server.registerTool("mail.update_labels", {
+server.registerTool("mail_update_labels", {
   title: "Update Labels",
   description: "Add or remove labels on a message",
   inputSchema: {
@@ -195,7 +195,7 @@ server.registerTool("mail.update_labels", {
   return status === 200 ? ok(data) : fail("Failed to update labels", data);
 });
 
-server.registerTool("mail.update_thread_labels", {
+server.registerTool("mail_update_thread_labels", {
   title: "Update Thread Labels",
   description: "Add or remove labels on a thread (e.g. 'starred', 'important', 'archived', or custom labels). Thread labels are separate from message labels.",
   inputSchema: {
@@ -209,7 +209,7 @@ server.registerTool("mail.update_thread_labels", {
   return status === 200 ? ok(data) : fail("Failed to update thread labels", data);
 });
 
-server.registerTool("mail.delete_message", {
+server.registerTool("mail_delete_message", {
   title: "Delete Message",
   description: "Delete a single message from the inbox",
   inputSchema: {
@@ -221,7 +221,7 @@ server.registerTool("mail.delete_message", {
   return status === 204 ? ok({ message: `Deleted message '${messageId}'` }) : fail("Failed to delete", data);
 });
 
-server.registerTool("mail.delete_thread", {
+server.registerTool("mail_delete_thread", {
   title: "Delete Thread",
   description: "Delete an entire thread and all its messages",
   inputSchema: {
@@ -237,7 +237,7 @@ server.registerTool("mail.delete_thread", {
 // EMAIL RULES (ALLOW/BLOCK LISTS)
 // ============================================
 
-server.registerTool("mail.list_rules", {
+server.registerTool("mail_list_rules", {
   title: "List Email Rules",
   description: "List all allow/block rules for this identity",
   inputSchema: {},
@@ -247,7 +247,7 @@ server.registerTool("mail.list_rules", {
   return status === 200 ? ok(data) : fail("Failed to list rules", data);
 });
 
-server.registerTool("mail.add_rule", {
+server.registerTool("mail_add_rule", {
   title: "Add Email Rule",
   description: "Add an allow or block rule for email. Use type ALLOW or BLOCK, scope RECEIVE/SEND/REPLY, and value as email or *@domain.com pattern.",
   inputSchema: {
@@ -261,7 +261,7 @@ server.registerTool("mail.add_rule", {
   return status === 201 ? ok(data) : fail("Failed to add rule", data);
 });
 
-server.registerTool("mail.delete_rule", {
+server.registerTool("mail_delete_rule", {
   title: "Delete Email Rule",
   description: "Delete an email allow/block rule by its ID",
   inputSchema: {
@@ -273,7 +273,7 @@ server.registerTool("mail.delete_rule", {
   return status === 204 ? ok({ message: `Deleted rule '${ruleId}'` }) : fail("Failed to delete rule", data);
 });
 
-server.registerTool("mail.list_threads", {
+server.registerTool("mail_list_threads", {
   title: "List Threads",
   description: "List email threads in your agent's inbox. Returns newest first.",
   inputSchema: {
@@ -290,7 +290,7 @@ server.registerTool("mail.list_threads", {
   return status === 200 ? ok(data) : fail("Failed to list threads", data);
 });
 
-server.registerTool("mail.get_thread", {
+server.registerTool("mail_get_thread", {
   title: "Get Thread",
   description: "Get a full email thread with messages (newest 200 by default)",
   inputSchema: {
@@ -310,7 +310,7 @@ server.registerTool("mail.get_thread", {
 // VAULT TOOLS
 // ============================================
 
-server.registerTool("vault.list", {
+server.registerTool("vault_list", {
   title: "List Credentials",
   description: "List all credentials in the vault (metadata only, no secrets)",
   inputSchema: {},
@@ -320,7 +320,7 @@ server.registerTool("vault.list", {
   return status === 200 ? ok(data) : fail("Failed to list credentials", data);
 });
 
-server.registerTool("vault.get", {
+server.registerTool("vault_get", {
   title: "Get Credential",
   description: "Retrieve a decrypted credential from the vault. For TOTP credentials, use vault.totp instead to get the code.",
   inputSchema: {
@@ -332,7 +332,7 @@ server.registerTool("vault.get", {
   return status === 200 ? ok(data) : fail("Failed to get credential", data);
 });
 
-server.registerTool("vault.totp", {
+server.registerTool("vault_totp", {
   title: "Get TOTP Code",
   description: "Generate the current 6-digit TOTP code. Works on any credential that has a TOTP secret. Response also includes backupCodesRemaining (count of stored single-use recovery codes); call vault.totp_use_backup when the live TOTP is unavailable.",
   inputSchema: {
@@ -344,7 +344,7 @@ server.registerTool("vault.totp", {
   return status === 200 ? ok(data) : fail("Failed to get TOTP", data);
 });
 
-server.registerTool("vault.totp_use_backup", {
+server.registerTool("vault_totp_use_backup", {
   title: "Use TOTP Backup Code",
   description: "Atomically consume one single-use TOTP backup code. The popped code is moved into data.usedBackupCodes for audit. Use when the live TOTP code is unavailable (clock skew, lost device).",
   inputSchema: {
@@ -356,7 +356,7 @@ server.registerTool("vault.totp_use_backup", {
   return status === 200 ? ok(data) : fail("Failed to consume backup code", data);
 });
 
-server.registerTool("vault.store", {
+server.registerTool("vault_store", {
   title: "Store Credential",
   description: "Store or update an encrypted credential in the vault. Prefer the typed helpers (vault.storeApiKey, vault.storeCard, vault.storeShippingAddress) when they fit.",
   inputSchema: {
@@ -444,7 +444,7 @@ server.registerTool("vault.storeShippingAddress", {
   return status === 200 ? ok(res) : fail("Failed to store shipping address", res);
 });
 
-server.registerTool("vault.delete", {
+server.registerTool("vault_delete", {
   title: "Delete Credential",
   description: "Remove a credential from the vault",
   inputSchema: {
@@ -460,7 +460,7 @@ server.registerTool("vault.delete", {
 // CALENDAR TOOLS
 // ============================================
 
-server.registerTool("calendar.create", {
+server.registerTool("calendar_create", {
   title: "Create Calendar Event",
   description: "Create a new event on this identity's calendar",
   inputSchema: {
@@ -477,7 +477,7 @@ server.registerTool("calendar.create", {
   return status === 201 || status === 200 ? ok(data) : fail("Failed to create event", data);
 });
 
-server.registerTool("calendar.update", {
+server.registerTool("calendar_update", {
   title: "Update Calendar Event",
   description: "Update an existing calendar event",
   inputSchema: {
@@ -495,7 +495,7 @@ server.registerTool("calendar.update", {
   return status === 200 ? ok(data) : fail("Failed to update event", data);
 });
 
-server.registerTool("calendar.list", {
+server.registerTool("calendar_list", {
   title: "List Calendar Events",
   description: "List events on this identity's calendar",
   inputSchema: {
@@ -514,7 +514,7 @@ server.registerTool("calendar.list", {
   return status === 200 ? ok(data) : fail("Failed to list events", data);
 });
 
-server.registerTool("calendar.get", {
+server.registerTool("calendar_get", {
   title: "Get Calendar Event",
   description: "Get details of a specific calendar event",
   inputSchema: {
@@ -526,7 +526,7 @@ server.registerTool("calendar.get", {
   return status === 200 ? ok(data) : fail("Failed to get event", data);
 });
 
-server.registerTool("calendar.delete", {
+server.registerTool("calendar_delete", {
   title: "Delete Calendar Event",
   description: "Delete a calendar event",
   inputSchema: {
@@ -538,7 +538,7 @@ server.registerTool("calendar.delete", {
   return status === 204 ? ok({ message: `Deleted event '${eventId}'` }) : fail("Failed to delete event", data);
 });
 
-server.registerTool("calendar.set_public", {
+server.registerTool("calendar_set_public", {
   title: "Set Calendar Visibility",
   description: "Make this identity's calendar public or private. Public calendars are viewable at /identities/:id/calendar.json",
   inputSchema: {
@@ -730,7 +730,7 @@ function platformApi(
 }
 
 if (IS_PLATFORM) {
-  platformServer.registerTool("identities.list", {
+  platformServer.registerTool("identities_list", {
     title: "List Identities",
     description: "List all identities in the organization",
     inputSchema: {
@@ -745,7 +745,7 @@ if (IS_PLATFORM) {
     return status === 200 ? ok(data) : fail("Failed to list identities", data);
   });
 
-  platformServer.registerTool("identities.get", {
+  platformServer.registerTool("identities_get", {
     title: "Get Identity",
     description: "Get details of a specific identity",
     inputSchema: {
@@ -757,7 +757,7 @@ if (IS_PLATFORM) {
     return status === 200 ? ok(data) : fail("Failed to get identity", data);
   });
 
-  platformServer.registerTool("identities.create", {
+  platformServer.registerTool("identities_create", {
     title: "Create Identity",
     description: "Create a new agent identity with an email inbox and API key",
     inputSchema: {
@@ -770,7 +770,7 @@ if (IS_PLATFORM) {
     return status === 201 || status === 200 ? ok(data) : fail("Failed to create identity", data);
   });
 
-  platformServer.registerTool("identities.delete", {
+  platformServer.registerTool("identities_delete", {
     title: "Delete Identity",
     description: "Permanently delete an identity and all its data (inbox, vault, logs)",
     inputSchema: {
@@ -782,7 +782,7 @@ if (IS_PLATFORM) {
     return status === 204 ? ok({ message: `Deleted identity ${identityId}` }) : fail("Failed to delete identity", data);
   });
 
-  platformServer.registerTool("identities.rotate_key", {
+  platformServer.registerTool("identities_rotate_key", {
     title: "Rotate Identity Key",
     description: "Generate a new API key for an identity. The old key is immediately invalidated.",
     inputSchema: {
@@ -793,7 +793,7 @@ if (IS_PLATFORM) {
     return status === 200 ? ok(data) : fail("Failed to rotate key", data);
   });
 
-  platformServer.registerTool("identities.update_scopes", {
+  platformServer.registerTool("identities_update_scopes", {
     title: "Update Identity Scopes",
     description: "Add or remove scopes from an identity",
     inputSchema: {
