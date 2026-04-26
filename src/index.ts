@@ -49,7 +49,7 @@ const server = new McpServer({
 // ============================================
 
 server.registerTool("identity_whoami", {
-  title: "Who Am I",
+  title: "Identity · Who Am I",
   description: "Get your agent identity info — name, email, DID, and scopes",
   inputSchema: {},
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -60,7 +60,7 @@ server.registerTool("identity_whoami", {
 });
 
 server.registerTool("identity_sign", {
-  title: "Sign Data",
+  title: "Identity · Sign Data",
   description: "Sign arbitrary data with this identity's Ed25519 private key. Returns the signature and the identity's DID.",
   inputSchema: {
     data: z.string().describe("Base64-encoded data to sign"),
@@ -72,7 +72,7 @@ server.registerTool("identity_sign", {
 });
 
 server.registerTool("identity_verify", {
-  title: "Verify Signature",
+  title: "Identity · Verify Signature",
   description: "Verify a signature against any did:web identity. Resolves the DID Document and checks the Ed25519 signature.",
   inputSchema: {
     data: z.string().describe("Base64-encoded original data"),
@@ -90,7 +90,7 @@ server.registerTool("identity_verify", {
 // ============================================
 
 server.registerTool("mail_send", {
-  title: "Send Email",
+  title: "Mail · Send",
   description: "Send an email from your agent's inbox",
   inputSchema: {
     to: z.array(z.string()).describe("Recipient email addresses"),
@@ -107,7 +107,7 @@ server.registerTool("mail_send", {
 });
 
 server.registerTool("mail_reply", {
-  title: "Reply to Email",
+  title: "Mail · Reply",
   description: "Reply to an existing email in a thread",
   inputSchema: {
     messageId: z.string().describe("The messageId of the email to reply to"),
@@ -121,7 +121,7 @@ server.registerTool("mail_reply", {
 });
 
 server.registerTool("mail_list_messages", {
-  title: "List Messages",
+  title: "Mail · List Messages",
   description: "List emails in your agent's inbox. Returns newest first.",
   inputSchema: {
     limit: z.number().optional().describe("Max messages to return (default 20, max 100)"),
@@ -140,7 +140,7 @@ server.registerTool("mail_list_messages", {
 });
 
 server.registerTool("mail_get_message", {
-  title: "Get Message",
+  title: "Mail · Get Message",
   description: "Get a specific email by its messageId",
   inputSchema: {
     messageId: z.string().describe("The messageId to retrieve"),
@@ -152,7 +152,7 @@ server.registerTool("mail_get_message", {
 });
 
 server.registerTool("mail_get_attachment", {
-  title: "Get Attachment",
+  title: "Mail · Get Attachment",
   description: "Download the contents of an email attachment as base64-encoded data. Use mail_get_message or mail_get_thread first to find attachment IDs and metadata.",
   inputSchema: {
     messageId: z.string().describe("The messageId that owns the attachment"),
@@ -182,7 +182,7 @@ server.registerTool("mail_get_attachment", {
 });
 
 server.registerTool("mail_update_labels", {
-  title: "Update Labels",
+  title: "Mail · Update Message Labels",
   description: "Add or remove labels on a message",
   inputSchema: {
     messageId: z.string().describe("The messageId to update"),
@@ -196,7 +196,7 @@ server.registerTool("mail_update_labels", {
 });
 
 server.registerTool("mail_update_thread_labels", {
-  title: "Update Thread Labels",
+  title: "Mail · Update Thread Labels",
   description: "Add or remove labels on a thread (e.g. 'starred', 'important', 'archived', or custom labels). Thread labels are separate from message labels.",
   inputSchema: {
     threadId: z.string().describe("The threadId to update"),
@@ -210,7 +210,7 @@ server.registerTool("mail_update_thread_labels", {
 });
 
 server.registerTool("mail_delete_message", {
-  title: "Delete Message",
+  title: "Mail · Delete Message",
   description: "Delete a single message from the inbox",
   inputSchema: {
     messageId: z.string().describe("The messageId to delete"),
@@ -222,7 +222,7 @@ server.registerTool("mail_delete_message", {
 });
 
 server.registerTool("mail_delete_thread", {
-  title: "Delete Thread",
+  title: "Mail · Delete Thread",
   description: "Delete an entire thread and all its messages",
   inputSchema: {
     threadId: z.string().describe("The threadId to delete"),
@@ -238,7 +238,7 @@ server.registerTool("mail_delete_thread", {
 // ============================================
 
 server.registerTool("mail_list_rules", {
-  title: "List Email Rules",
+  title: "Mail · List Rules",
   description: "List all allow/block rules for this identity",
   inputSchema: {},
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -248,7 +248,7 @@ server.registerTool("mail_list_rules", {
 });
 
 server.registerTool("mail_add_rule", {
-  title: "Add Email Rule",
+  title: "Mail · Add Rule",
   description: "Add an allow or block rule for email. Use type ALLOW or BLOCK, scope RECEIVE/SEND/REPLY, and value as email or *@domain.com pattern.",
   inputSchema: {
     type: z.enum(["ALLOW", "BLOCK"]).describe("Rule type: ALLOW or BLOCK"),
@@ -262,7 +262,7 @@ server.registerTool("mail_add_rule", {
 });
 
 server.registerTool("mail_delete_rule", {
-  title: "Delete Email Rule",
+  title: "Mail · Delete Rule",
   description: "Delete an email allow/block rule by its ID",
   inputSchema: {
     ruleId: z.string().describe("The rule ID to delete"),
@@ -274,7 +274,7 @@ server.registerTool("mail_delete_rule", {
 });
 
 server.registerTool("mail_list_threads", {
-  title: "List Threads",
+  title: "Mail · List Threads",
   description: "List email threads in your agent's inbox. Returns newest first.",
   inputSchema: {
     limit: z.number().optional().describe("Max threads to return (default 20, max 100)"),
@@ -291,7 +291,7 @@ server.registerTool("mail_list_threads", {
 });
 
 server.registerTool("mail_get_thread", {
-  title: "Get Thread",
+  title: "Mail · Get Thread",
   description: "Get a full email thread with messages (newest 200 by default)",
   inputSchema: {
     threadId: z.string().describe("The threadId to retrieve"),
@@ -311,7 +311,7 @@ server.registerTool("mail_get_thread", {
 // ============================================
 
 server.registerTool("vault_list", {
-  title: "List Credentials",
+  title: "Vault · List Credentials",
   description: "List all credentials in the vault (metadata only, no secrets)",
   inputSchema: {},
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -321,7 +321,7 @@ server.registerTool("vault_list", {
 });
 
 server.registerTool("vault_get", {
-  title: "Get Credential",
+  title: "Vault · Get Credential",
   description: "Retrieve a decrypted credential from the vault. For TOTP credentials, use vault_totp instead to get the code.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'salesforce', 'hubspot-api')"),
@@ -333,7 +333,7 @@ server.registerTool("vault_get", {
 });
 
 server.registerTool("vault_totp", {
-  title: "Get TOTP Code",
+  title: "Vault · Get TOTP Code",
   description: "Generate the current 6-digit TOTP code. Works on any credential that has a TOTP secret. Response also includes backupCodesRemaining (count of stored single-use recovery codes); call vault_totp_use_backup when the live TOTP is unavailable.",
   inputSchema: {
     name: z.string().describe("Credential name with TOTP"),
@@ -345,7 +345,7 @@ server.registerTool("vault_totp", {
 });
 
 server.registerTool("vault_totp_use_backup", {
-  title: "Use TOTP Backup Code",
+  title: "Vault · Use TOTP Backup Code",
   description: "Atomically consume one single-use TOTP backup code. The popped code is moved into data.usedBackupCodes for audit. Use when the live TOTP code is unavailable (clock skew, lost device).",
   inputSchema: {
     name: z.string().describe("Credential name with backup codes"),
@@ -357,7 +357,7 @@ server.registerTool("vault_totp_use_backup", {
 });
 
 server.registerTool("vault_store", {
-  title: "Store Credential",
+  title: "Vault · Store Credential",
   description: "Store or update an encrypted credential in the vault. Prefer the typed helpers (vault_storeApiKey, vault_storeCard, vault_storeShippingAddress) when they fit.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'salesforce', 'prod-db')"),
@@ -377,7 +377,7 @@ server.registerTool("vault_store", {
 });
 
 server.registerTool("vault_storeApiKey", {
-  title: "Store API Key",
+  title: "Vault · Store API Key",
   description: "Store an API_KEY credential. Use just 'secret' for single-key services (e.g. sk_live_...), or both 'clientId' and 'secret' for OAuth-style client credentials.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'stripe', 'twitter')"),
@@ -395,7 +395,7 @@ server.registerTool("vault_storeApiKey", {
 });
 
 server.registerTool("vault_storeCard", {
-  title: "Store Card",
+  title: "Vault · Store Card",
   description: "Store a payment card as an encrypted credential. This is password-manager-style secret storage — the vault does NOT charge the card.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'personal-visa')"),
@@ -420,7 +420,7 @@ server.registerTool("vault_storeCard", {
 });
 
 server.registerTool("vault_storeShippingAddress", {
-  title: "Store Shipping Address",
+  title: "Vault · Store Shipping Address",
   description: "Store a shipping / mailing address as an encrypted credential.",
   inputSchema: {
     name: z.string().describe("Credential name (e.g. 'home', 'office')"),
@@ -445,7 +445,7 @@ server.registerTool("vault_storeShippingAddress", {
 });
 
 server.registerTool("vault_delete", {
-  title: "Delete Credential",
+  title: "Vault · Delete Credential",
   description: "Remove a credential from the vault",
   inputSchema: {
     name: z.string().describe("Credential name to delete"),
@@ -461,7 +461,7 @@ server.registerTool("vault_delete", {
 // ============================================
 
 server.registerTool("calendar_create", {
-  title: "Create Calendar Event",
+  title: "Calendar · Create Event",
   description: "Create a new event on this identity's calendar",
   inputSchema: {
     title: z.string().describe("Event title"),
@@ -478,7 +478,7 @@ server.registerTool("calendar_create", {
 });
 
 server.registerTool("calendar_update", {
-  title: "Update Calendar Event",
+  title: "Calendar · Update Event",
   description: "Update an existing calendar event",
   inputSchema: {
     eventId: z.string().describe("Event ID to update"),
@@ -496,7 +496,7 @@ server.registerTool("calendar_update", {
 });
 
 server.registerTool("calendar_list", {
-  title: "List Calendar Events",
+  title: "Calendar · List Events",
   description: "List events on this identity's calendar",
   inputSchema: {
     limit: z.number().optional().describe("Max results (default 50, max 100)"),
@@ -515,7 +515,7 @@ server.registerTool("calendar_list", {
 });
 
 server.registerTool("calendar_get", {
-  title: "Get Calendar Event",
+  title: "Calendar · Get Event",
   description: "Get details of a specific calendar event",
   inputSchema: {
     eventId: z.string().describe("Event ID"),
@@ -527,7 +527,7 @@ server.registerTool("calendar_get", {
 });
 
 server.registerTool("calendar_delete", {
-  title: "Delete Calendar Event",
+  title: "Calendar · Delete Event",
   description: "Delete a calendar event",
   inputSchema: {
     eventId: z.string().describe("Event ID to delete"),
@@ -539,7 +539,7 @@ server.registerTool("calendar_delete", {
 });
 
 server.registerTool("calendar_set_public", {
-  title: "Set Calendar Visibility",
+  title: "Calendar · Set Visibility",
   description: "Make this identity's calendar public or private. Public calendars are viewable at /identities/:id/calendar.json",
   inputSchema: {
     enabled: z.boolean().describe("true = public, false = private"),
@@ -555,7 +555,7 @@ server.registerTool("calendar_set_public", {
 // ============================================
 
 server.registerPrompt("whoami", {
-  title: "Who Am I",
+  title: "Identity · Who Am I",
   description: "Get your agent identity — name, email, and permissions",
 }, async () => ({
   messages: [{
@@ -611,7 +611,7 @@ server.registerPrompt("search-messages", {
 }));
 
 server.registerPrompt("send-email", {
-  title: "Send Email",
+  title: "Mail · Send",
   description: "Compose and send an email",
   argsSchema: {
     to: z.string().describe("Recipient email address"),
@@ -625,7 +625,7 @@ server.registerPrompt("send-email", {
 }));
 
 server.registerPrompt("reply-to-email", {
-  title: "Reply to Email",
+  title: "Mail · Reply",
   description: "Reply to a specific email message",
   argsSchema: {
     messageId: z.string().describe("The message ID to reply to"),
@@ -674,7 +674,7 @@ server.registerPrompt("cleanup-inbox", {
 }));
 
 server.registerPrompt("list-credentials", {
-  title: "List Credentials",
+  title: "Vault · List Credentials",
   description: "List all credentials stored in the vault",
 }, async () => ({
   messages: [{
@@ -684,7 +684,7 @@ server.registerPrompt("list-credentials", {
 }));
 
 server.registerPrompt("store-credential", {
-  title: "Store Credential",
+  title: "Vault · Store Credential",
   description: "Store a new credential in the vault",
   argsSchema: {
     name: z.string().describe("Credential name (e.g. 'stripe-api')"),
@@ -698,7 +698,7 @@ server.registerPrompt("store-credential", {
 }));
 
 server.registerPrompt("get-totp", {
-  title: "Get TOTP Code",
+  title: "Vault · Get TOTP Code",
   description: "Generate a 2FA code from a stored credential",
   argsSchema: {
     name: z.string().describe("Credential name with TOTP"),
@@ -731,7 +731,7 @@ function platformApi(
 
 if (IS_PLATFORM) {
   platformServer.registerTool("identities_list", {
-    title: "List Identities",
+    title: "Identities · List",
     description: "List all identities in the organization",
     inputSchema: {
       limit: z.number().optional().describe("Max results (default 50, max 100)"),
@@ -746,7 +746,7 @@ if (IS_PLATFORM) {
   });
 
   platformServer.registerTool("identities_get", {
-    title: "Get Identity",
+    title: "Identities · Get",
     description: "Get details of a specific identity",
     inputSchema: {
       identityId: z.string().describe("Identity ID"),
@@ -758,7 +758,7 @@ if (IS_PLATFORM) {
   });
 
   platformServer.registerTool("identities_create", {
-    title: "Create Identity",
+    title: "Identities · Create",
     description: "Create a new agent identity with an email inbox and API key",
     inputSchema: {
       name: z.string().describe("Display name (e.g. Sales Agent)"),
@@ -771,7 +771,7 @@ if (IS_PLATFORM) {
   });
 
   platformServer.registerTool("identities_delete", {
-    title: "Delete Identity",
+    title: "Identities · Delete",
     description: "Permanently delete an identity and all its data (inbox, vault, logs)",
     inputSchema: {
       identityId: z.string().describe("Identity ID to delete"),
@@ -783,7 +783,7 @@ if (IS_PLATFORM) {
   });
 
   platformServer.registerTool("identities_rotate_key", {
-    title: "Rotate Identity Key",
+    title: "Identities · Rotate Key",
     description: "Generate a new API key for an identity. The old key is immediately invalidated.",
     inputSchema: {
       identityId: z.string().describe("Identity ID to rotate key for"),
@@ -794,7 +794,7 @@ if (IS_PLATFORM) {
   });
 
   platformServer.registerTool("identities_update_scopes", {
-    title: "Update Identity Scopes",
+    title: "Identities · Update Scopes",
     description: "Add or remove scopes from an identity",
     inputSchema: {
       identityId: z.string().describe("Identity ID"),
