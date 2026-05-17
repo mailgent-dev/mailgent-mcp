@@ -551,6 +551,97 @@ server.registerTool("calendar_set_public", {
 });
 
 // ============================================
+// PAYMENTS — buyer side
+// ============================================
+
+server.registerTool("payments_pay", {
+  title: "Payments · Pay",
+  description:
+    "Pay an x402-priced URL in USDC under this identity's active mandate. Returns the resource content plus cost, balance, and mandate progress. Returns a typed failure body (with `code`) instead of throwing when the mandate, balance, or seller rejects the call. Use dryRun=true to preview without spending.",
+  inputSchema: {
+    url: z.string().url().describe("URL of the paid resource. Server should respond with HTTP 402 if payment is required."),
+    dryRun: z.boolean().optional().describe("If true, validate the mandate + balance + caps but do not sign or settle."),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+}, async ({ url, dryRun }) => {
+  // The pay endpoint encodes success/failure in the body and may return 200, 402, or 503.
+  // All three should pass through to the caller as the typed result.
+  const { data } = await api("POST", "/payments/pay", { url, dryRun });
+  if (!data || typeof data !== "object" || !("ok" in (data as Record<string, unknown>))) {
+    return fail("Unexpected response from /payments/pay", data);
+  }
+  return ok(data);
+});
+
+server.registerTool("payments_activity", {
+  title: "Payments · Activity",
+  description:
+    "Bank-statement-style merged feed of payments sent (direction: 'out') and received (direction: 'in') for this identity, latest first.",
+  inputSchema: {
+    limit: z.number().int().min(1).max(200).optional().describe("Max rows to return (default 50, max 200)."),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ limit }) => {
+  const qs = limit ? `?limit=${limit}` : "";
+  const { status, data } = await api("GET", `/payments/activity${qs}`);
+  return status === 200 ? ok(data) : fail("Failed to fetch activity", data);
+});
+
+server.registerTool("payments_mandates_list", {
+  title: "Payments · List Mandates",
+  description: "List spend mandates attached to this identity's wallet (active, expired, revoked, and errored).",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async () => {
+  const { status, data } = await api("GET", "/payments/mandates");
+  return status === 200 ? ok(data) : fail("Failed to list mandates", data);
+});
+
+server.registerTool("payments_mandates_create", {
+  title: "Payments · Create Mandate",
+  description:
+    "Create the spend policy for this identity's wallet. Installs an on-chain session key — first call takes 10–30 seconds. If installError comes back set, the mandate is unusable: retry creation.",
+  inputSchema: {
+    maxPerCallUsdc: z.string().describe("Max USDC any single pay() call can spend, decimal e.g. '0.10'."),
+    dailyCapUsdc: z.string().describe("Max cumulative USDC per UTC day, decimal e.g. '1.00'. Must be >= maxPerCallUsdc."),
+    validUntil: z.string().optional().describe("ISO 8601 expiry. Defaults to 7 days from now."),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+}, async ({ maxPerCallUsdc, dailyCapUsdc, validUntil }) => {
+  const { status, data } = await api("POST", "/payments/mandates", {
+    maxPerCallUsdc,
+    dailyCapUsdc,
+    validUntil,
+  });
+  return status === 200 ? ok(data) : fail("Failed to create mandate", data);
+});
+
+server.registerTool("payments_mandates_get", {
+  title: "Payments · Get Mandate",
+  description: "Fetch one mandate by id, with live spend counters.",
+  inputSchema: {
+    mandateId: z.string().describe("Mandate id (e.g. 'm_abc123')."),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ mandateId }) => {
+  const { status, data } = await api("GET", `/payments/mandates/${encodeURIComponent(mandateId)}`);
+  return status === 200 ? ok(data) : fail("Failed to get mandate", data);
+});
+
+server.registerTool("payments_mandates_revoke", {
+  title: "Payments · Revoke Mandate",
+  description:
+    "Revoke a mandate. The on-chain session key is not uninstalled (manual via Console if needed); settled payments are unaffected.",
+  inputSchema: {
+    mandateId: z.string().describe("Mandate id to revoke."),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+}, async ({ mandateId }) => {
+  const { status, data } = await api("DELETE", `/payments/mandates/${encodeURIComponent(mandateId)}`);
+  return status === 204 || status === 200 ? ok({ revoked: mandateId }) : fail("Failed to revoke mandate", data);
+});
+
+// ============================================
 // PROMPTS
 // ============================================
 
