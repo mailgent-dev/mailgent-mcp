@@ -882,15 +882,34 @@ if (IS_PLATFORM) {
 
   platformServer.registerTool("identities_create", {
     title: "Identities · Create",
-    description: "Create a new agent identity with an email inbox and API key",
+    description:
+      "Create a new agent identity. All fields default — call with `{}` to get a BUYER identity with an auto-generated 3-word slug name and matching inbox.",
     inputSchema: {
-      name: z.string().describe("Display name (e.g. Sales Agent)"),
-      emailName: z.string().describe("Email prefix (e.g. salesagent)"),
-      scopes: z.array(z.string()).describe("Scopes: mail:read, mail:send, mail:manage, vault:read, vault:write, identity:sign, identity:verify, calendar:read, calendar:write, calendar:delete, calendar:public"),
+      purpose: z.enum(["BUYER", "SELLER"]).optional().describe("Project type. Defaults to BUYER (inbox + vault + calendar + payments:spend). SELLER gets payments:accept only, for paid endpoints."),
+      name: z.string().optional().describe("Display name (e.g. Sales Agent). If omitted, a fresh 3-word slug is used. Editable via identities_update."),
+      emailName: z.string().optional().describe("BUYER-only email prefix override. If omitted, the server picks a slug. Ignored for SELLER."),
+      scopes: z.array(z.string()).optional().describe("Scopes (optional). Defaults applied per purpose. Available: mail:read, mail:send, mail:manage, vault:read, vault:write, identity:sign, identity:verify, calendar:read, calendar:write, calendar:delete, calendar:public, payments:spend, payments:accept"),
     },
-  }, async ({ name, emailName, scopes }) => {
-    const { status, data } = await platformApi("POST", "/identities", { name, emailName, scopes });
+  }, async ({ purpose, name, emailName, scopes }) => {
+    const body: Record<string, unknown> = {};
+    if (purpose !== undefined) body.purpose = purpose;
+    if (name !== undefined) body.name = name;
+    if (emailName !== undefined) body.emailName = emailName;
+    if (scopes !== undefined) body.scopes = scopes;
+    const { status, data } = await platformApi("POST", "/identities", body);
     return status === 201 || status === 200 ? ok(data) : fail("Failed to create identity", data);
+  });
+
+  platformServer.registerTool("identities_update", {
+    title: "Identities · Update",
+    description: "Rename an identity. The inbox email address is immutable; only the display name can change. For scope changes, use identities_update_scopes.",
+    inputSchema: {
+      identityId: z.string().describe("Identity ID"),
+      name: z.string().min(1).describe("New display name."),
+    },
+  }, async ({ identityId, name }) => {
+    const { status, data } = await platformApi("PATCH", `/identities/${identityId}`, { name });
+    return status === 200 ? ok(data) : fail("Failed to update identity", data);
   });
 
   platformServer.registerTool("identities_delete", {
