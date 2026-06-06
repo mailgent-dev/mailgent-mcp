@@ -58,7 +58,6 @@ const SCOPES = {
   CALENDAR_WRITE: "calendar:write",
   CALENDAR_DELETE: "calendar:delete",
   CALENDAR_PUBLIC: "calendar:public",
-  PAYMENTS_ACCEPT: "payments:accept",
   PAYMENTS_SPEND: "payments:spend",
 } as const;
 
@@ -68,8 +67,7 @@ const SCOPES = {
  * always register.
  *
  * Gating at registration time means the LLM's tool picker only sees what's
- * actually callable — SELLER projects (only payments:accept) don't see
- * buyer-side tools at all.
+ * actually callable — keys without buyer scopes surface no tools.
  */
 function registerUserTools(scopes: string[]) {
   const has = (s: string) => scopes.includes(s);
@@ -80,7 +78,7 @@ function registerUserTools(scopes: string[]) {
 
 server.registerTool("identity_whoami", {
   title: "Identity · Who Am I",
-  description: "Get your agent identity info — name, email, DID, scopes, and purpose (SELLER or BUYER)",
+  description: "Get your agent identity info — name, email, DID, scopes, and purpose",
   inputSchema: {},
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 }, async () => {
@@ -587,7 +585,7 @@ if (has(SCOPES.CALENDAR_PUBLIC)) server.registerTool("calendar_set_public", {
 if (has(SCOPES.PAYMENTS_SPEND)) server.registerTool("payments_pay", {
   title: "Payments · Pay",
   description:
-    "Pay an x402-priced URL in USDC under this identity's active mandate. Returns the resource content plus cost, balance, and mandate progress. Returns a typed failure body (with `code`) instead of throwing when the mandate, balance, or seller rejects the call. Use dryRun=true to preview without spending.",
+    "Pay an x402-priced URL in USDC under this identity's active mandate. Returns the resource content plus cost, balance, and mandate progress. Returns a typed failure body (with `code`) instead of throwing when the mandate, balance, or the paid API rejects the call. Use dryRun=true to preview without spending.",
   inputSchema: {
     url: z.string().url().describe("URL of the paid resource. Server should respond with HTTP 402 if payment is required."),
     dryRun: z.boolean().optional().describe("If true, validate the mandate + balance + caps but do not sign or settle."),
@@ -885,10 +883,10 @@ if (IS_PLATFORM) {
     description:
       "Create a new agent identity. All fields default — call with `{}` to get a BUYER identity with an auto-generated 3-word slug name and matching inbox.",
     inputSchema: {
-      purpose: z.enum(["BUYER", "SELLER"]).optional().describe("Project type. Defaults to BUYER (inbox + vault + calendar + payments:spend). SELLER gets payments:accept only, for paid endpoints."),
+      purpose: z.enum(["BUYER"]).optional().describe("Project type. Defaults to BUYER (inbox + vault + calendar + payments:spend)."),
       name: z.string().optional().describe("Display name (e.g. Sales Agent). If omitted, a fresh 3-word slug is used. Editable via identities_update."),
-      emailName: z.string().optional().describe("BUYER-only email prefix override. If omitted, the server picks a slug. Ignored for SELLER."),
-      scopes: z.array(z.string()).optional().describe("Scopes (optional). Defaults applied per purpose. Available: mail:read, mail:send, mail:manage, vault:read, vault:write, identity:sign, identity:verify, calendar:read, calendar:write, calendar:delete, calendar:public, payments:spend, payments:accept"),
+      emailName: z.string().optional().describe("Email prefix override. If omitted, the server picks a slug."),
+      scopes: z.array(z.string()).optional().describe("Scopes (optional). Defaults applied per purpose. Available: mail:read, mail:send, mail:manage, vault:read, vault:write, identity:sign, identity:verify, calendar:read, calendar:write, calendar:delete, calendar:public, payments:spend"),
     },
   }, async ({ purpose, name, emailName, scopes }) => {
     const body: Record<string, unknown> = {};
@@ -968,8 +966,8 @@ async function main() {
   }
 
   // Discover which tools to expose by looking up the identity's scopes.
-  // SELLER projects only have payments:accept and see no buyer-side tools;
-  // BUYER projects get the broad mail/vault/calendar/payments-spend surface.
+  // Keys without buyer scopes surface no tools; BUYER projects get the broad
+  // mail/vault/calendar/payments-spend surface.
   const { status, data } = await api("GET", "/whoami");
   if (status !== 200) {
     console.error(
@@ -978,7 +976,7 @@ async function main() {
     );
     process.exit(1);
   }
-  const whoami = data as { scopes: string[]; purpose: "SELLER" | "BUYER" };
+  const whoami = data as { scopes: string[]; purpose: "BUYER" };
   const scopes = whoami.scopes;
   console.error(
     `Connected as ${whoami.purpose} identity with ${scopes.length} scope(s).`,
