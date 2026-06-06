@@ -1,4 +1,4 @@
-// Integration tests for @mailgent/mcp.
+// Integration tests for @mailgent-dev/mcp.
 //
 // These exercise the REST endpoints that the MCP tools wrap. The MCP server
 // itself is a thin pass-through (URL + method + Authorization header), so

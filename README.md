@@ -1,4 +1,4 @@
-# @mailgent/mcp
+# @mailgent-dev/mcp
 
 Identity infrastructure for AI agents — email, credentials, and TOTP in one place.
 
@@ -9,7 +9,7 @@ Identity infrastructure for AI agents — email, credentials, and TOTP in one pl
   "mcpServers": {
     "mailgent": {
       "command": "npx",
-      "args": ["-y", "@mailgent/mcp"],
+      "args": ["-y", "@mailgent-dev/mcp"],
       "env": {
         "MAILGENT_API_KEY": "YOUR_API_KEY"
       }
@@ -75,12 +75,12 @@ Each identity is its own MCP server instance:
   "mcpServers": {
     "sales-agent": {
       "command": "npx",
-      "args": ["-y", "@mailgent/mcp"],
+      "args": ["-y", "@mailgent-dev/mcp"],
       "env": { "MAILGENT_API_KEY": "loid-sales-key" }
     },
     "support-agent": {
       "command": "npx",
-      "args": ["-y", "@mailgent/mcp"],
+      "args": ["-y", "@mailgent-dev/mcp"],
       "env": { "MAILGENT_API_KEY": "loid-support-key" }
     }
   }
