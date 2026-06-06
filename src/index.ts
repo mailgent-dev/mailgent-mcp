@@ -4,8 +4,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const API_KEY = process.env.LOOMAL_API_KEY || "";
-const API_BASE = process.env.LOOMAL_API_URL || "https://api.loomal.ai";
+const API_KEY = process.env.MAILGENT_API_KEY || "";
+const API_BASE = process.env.MAILGENT_API_URL || "https://api.mailgent.dev";
 
 async function api(
   method: string,
@@ -40,7 +40,7 @@ function fail(msg: string, data?: unknown) {
 }
 
 const server = new McpServer({
-  name: "loomal",
+  name: "mailgent",
   version: "0.1.0",
 });
 
@@ -107,7 +107,7 @@ if (has(SCOPES.IDENTITY_VERIFY)) server.registerTool("identity_verify", {
   inputSchema: {
     data: z.string().describe("Base64-encoded original data"),
     signature: z.string().describe("Base64-encoded signature to verify"),
-    did: z.string().describe("DID of the signer (e.g., did:web:api.loomal.ai:identities:id-abc123)"),
+    did: z.string().describe("DID of the signer (e.g., did:web:api.mailgent.dev:identities:id-abc123)"),
   },
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 }, async ({ data, signature, did }) => {
@@ -840,7 +840,7 @@ server.registerPrompt("get-totp", {
 const IS_PLATFORM = API_KEY.startsWith("lopk-");
 
 const platformServer = new McpServer({
-  name: "loomal-platform",
+  name: "mailgent-platform",
   version: "0.1.0",
 });
 
@@ -955,7 +955,7 @@ if (IS_PLATFORM) {
 
 async function main() {
   if (!API_KEY) {
-    console.error("LOOMAL_API_KEY is required. Set it in your MCP config env.");
+    console.error("MAILGENT_API_KEY is required. Set it in your MCP config env.");
     process.exit(1);
   }
 
@@ -974,7 +974,7 @@ async function main() {
   if (status !== 200) {
     console.error(
       `Failed to fetch identity scopes (status ${status}). ` +
-      "Check LOOMAL_API_KEY is valid and the API is reachable.",
+      "Check MAILGENT_API_KEY is valid and the API is reachable.",
     );
     process.exit(1);
   }

@@ -1,18 +1,18 @@
-// Integration tests for @loomal/mcp.
+// Integration tests for @mailgent/mcp.
 //
 // These exercise the REST endpoints that the MCP tools wrap. The MCP server
 // itself is a thin pass-through (URL + method + Authorization header), so
 // validating the underlying endpoint behaviour is what matters.
 //
-// Skipped automatically when LOOMAL_API_URL is not set, so CI without a local
-// API still passes. To run: LOOMAL_API_URL=http://localhost:3001 LOOMAL_API_KEY=loid-... node --test tests/
+// Skipped automatically when MAILGENT_API_URL is not set, so CI without a local
+// API still passes. To run: MAILGENT_API_URL=http://localhost:3001 MAILGENT_API_KEY=loid-... node --test tests/
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const API_BASE = process.env.LOOMAL_API_URL;
-const API_KEY = process.env.LOOMAL_API_KEY;
-const TEST_CRED = process.env.LOOMAL_TEST_CRED || "test-totp-mcp";
+const API_BASE = process.env.MAILGENT_API_URL;
+const API_KEY = process.env.MAILGENT_API_KEY;
+const TEST_CRED = process.env.MAILGENT_TEST_CRED || "test-totp-mcp";
 
 const skip = !API_BASE || !API_KEY;
 
