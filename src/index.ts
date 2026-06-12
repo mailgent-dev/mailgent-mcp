@@ -931,7 +931,9 @@ server.registerPrompt("get-totp", {
 // PLATFORM MODE
 // ============================================
 
-const IS_PLATFORM = API_KEY.startsWith("lopk-");
+// Platform keys use the mgpk- prefix (legacy: lopk-). Identity keys use
+// mgnt- (legacy: loid-). Accept both so old and new keys route correctly.
+const IS_PLATFORM = API_KEY.startsWith("mgpk-") || API_KEY.startsWith("lopk-");
 
 const platformServer = new McpServer({
   name: "mailgent-platform",
@@ -1056,7 +1058,7 @@ async function main() {
   const transport = new StdioServerTransport();
 
   if (IS_PLATFORM) {
-    console.error("Platform mode: lopk- key detected. Registering identity management tools.");
+    console.error("Platform mode: platform key detected. Registering identity management tools.");
     await platformServer.connect(transport);
     return;
   }
