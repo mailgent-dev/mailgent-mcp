@@ -59,6 +59,10 @@ const SCOPES = {
   CALENDAR_DELETE: "calendar:delete",
   CALENDAR_PUBLIC: "calendar:public",
   PAYMENTS_SPEND: "payments:spend",
+  SLACK_READ: "slack:read",
+  SLACK_SEND: "slack:send",
+  SOCIAL_READ: "social:read",
+  SOCIAL_WRITE: "social:write",
 } as const;
 
 /**
@@ -669,6 +673,98 @@ if (has(SCOPES.PAYMENTS_SPEND)) server.registerTool("payments_mandates_revoke", 
   return status === 204 || status === 200 ? ok({ revoked: mandateId }) : fail("Failed to revoke mandate", data);
 });
 
+// ============================================
+// SLACK TOOLS
+// ============================================
+
+if (has(SCOPES.SLACK_SEND)) server.registerTool("slack_send_message", {
+  title: "Slack · Send Message",
+  description:
+    "Send a message to a Slack channel in the connected workspace. The bot must be a member of the channel (/invite it in Slack first). Set threadTs to reply in a thread.",
+  inputSchema: {
+    channel: z.string().max(80).describe("Channel ID (C…) or channel name"),
+    text: z.string().min(1).max(40_000).describe("Message text (Slack mrkdwn)"),
+    threadTs: z.string().max(30).optional().describe("Parent message ts to reply in a thread"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+}, async ({ channel, text, threadTs }) => {
+  const { status, data } = await api("POST", "/slack/messages", { channel, text, threadTs });
+  return status === 201 ? ok(data) : fail("Failed to send Slack message", data);
+});
+
+if (has(SCOPES.SLACK_READ)) server.registerTool("slack_list_messages", {
+  title: "Slack · List Inbound Messages",
+  description:
+    "List Slack messages received in channels the connected bot is in, newest first (stored like a mail inbox). Use 'since' (ISO-8601) to fetch only messages that arrived after your last check, then reply with slack_send_message using the message's channelId and ts as threadTs.",
+  inputSchema: {
+    channel: z.string().max(80).optional().describe("Filter to one channel ID (C…)"),
+    since: z.string().max(40).optional().describe("ISO-8601 timestamp — only messages received after this"),
+    limit: z.number().int().min(1).max(200).optional().describe("Max messages to return (default 50)"),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async ({ channel, since, limit }) => {
+  const params = new URLSearchParams();
+  if (channel) params.set("channel", channel);
+  if (since) params.set("since", since);
+  if (limit) params.set("limit", String(limit));
+  const q = params.toString();
+  const { status, data } = await api("GET", `/slack/messages${q ? `?${q}` : ""}`);
+  return status === 200 ? ok(data) : fail("Failed to list Slack messages", data);
+});
+
+if (has(SCOPES.SLACK_READ)) server.registerTool("slack_list_channels", {
+  title: "Slack · List Channels",
+  description:
+    "List channels in the connected Slack workspace, with whether the bot is a member (it can only read/post where it's a member).",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+}, async () => {
+  const { status, data } = await api("GET", "/slack/channels");
+  return status === 200 ? ok(data) : fail("Failed to list Slack channels", data);
+});
+
+// ============================================
+// SOCIAL TOOLS — post to X/LinkedIn/Instagram/…
+// ============================================
+
+if (has(SCOPES.SOCIAL_READ)) server.registerTool("social_list_accounts", {
+  title: "Social · List Accounts",
+  description: "List the social accounts connected to this identity (platform, username).",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+}, async () => {
+  const { status, data } = await api("GET", "/social/accounts");
+  return status === 200 ? ok(data) : fail("Failed to list social accounts", data);
+});
+
+if (has(SCOPES.SOCIAL_WRITE)) server.registerTool("social_post", {
+  title: "Social · Publish Post",
+  description:
+    "Publish a post to connected social accounts on behalf of your human. Accounts are connected by your human in the Mailgent console (Settings → Integrations). Omit platforms to post to ALL connected accounts. Posting is asynchronous — check social_get_post for per-platform results and live URLs.",
+  inputSchema: {
+    text: z.string().min(1).max(10_000).describe("Post text"),
+    platforms: z.array(z.string().max(30)).max(10).optional().describe("Subset of platforms (e.g. ['x','linkedin']); omit for all connected"),
+    mediaUrls: z.array(z.string().url()).max(10).optional().describe("Public image/video URLs to attach"),
+    scheduledAt: z.string().optional().describe("ISO-8601 time to schedule instead of posting now"),
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+}, async ({ text, platforms, mediaUrls, scheduledAt }) => {
+  const { status, data } = await api("POST", "/social/posts", { text, platforms, mediaUrls, scheduledAt });
+  return status === 201 ? ok(data) : fail("Failed to publish post", data);
+});
+
+if (has(SCOPES.SOCIAL_READ)) server.registerTool("social_get_post", {
+  title: "Social · Get Post Status",
+  description: "Check a published post: overall status plus per-platform results and live URLs. Pass the postId returned by social_post.",
+  inputSchema: {
+    postId: z.string().min(1).max(64).describe("Post id from social_post"),
+  },
+  annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+}, async ({ postId }) => {
+  const { status, data } = await api("GET", `/social/posts/${encodeURIComponent(postId)}`);
+  return status === 200 ? ok(data) : fail("Failed to get post", data);
+});
+
 } // end registerUserTools
 
 // ============================================
@@ -886,7 +982,7 @@ if (IS_PLATFORM) {
       purpose: z.enum(["BUYER"]).optional().describe("Project type. Defaults to BUYER (inbox + vault + calendar + payments:spend)."),
       name: z.string().optional().describe("Display name (e.g. Sales Agent). If omitted, a fresh 3-word slug is used. Editable via identities_update."),
       emailName: z.string().optional().describe("Email prefix override. If omitted, the server picks a slug."),
-      scopes: z.array(z.string()).optional().describe("Scopes (optional). Defaults applied per purpose. Available: mail:read, mail:send, mail:manage, vault:read, vault:write, identity:sign, identity:verify, calendar:read, calendar:write, calendar:delete, calendar:public, payments:spend"),
+      scopes: z.array(z.string()).optional().describe("Scopes (optional). Defaults applied per purpose. Available: mail:read, mail:send, mail:manage, vault:read, vault:write, identity:sign, identity:verify, calendar:read, calendar:write, calendar:delete, calendar:public, payments:spend, slack:read, slack:send, social:read, social:write"),
     },
   }, async ({ purpose, name, emailName, scopes }) => {
     const body: Record<string, unknown> = {};

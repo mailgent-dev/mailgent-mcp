@@ -28,6 +28,8 @@ Get your API key from [console.mailgent.dev](https://console.mailgent.dev).
 > Store my Stripe API key in the vault
 > Get the TOTP code for my AWS account
 > Delete the test thread I created earlier
+> Post our launch announcement to X and LinkedIn
+> Send a standup summary to #general on Slack
 ```
 
 ## Tools
@@ -65,6 +67,22 @@ Get your API key from [console.mailgent.dev](https://console.mailgent.dev).
 | `vault_storeCard` | Store a payment card — encrypted at rest, vault does not process payments |
 | `vault_storeShippingAddress` | Store a shipping / mailing address |
 | `vault_delete` | Delete a credential |
+
+### Slack
+
+| Tool | Description |
+|------|-------------|
+| `slack_send_message` | Send a message to a Slack channel (set `threadTs` to reply in a thread) |
+| `slack_list_messages` | List messages received in channels the connected bot is in, newest first |
+| `slack_list_channels` | List workspace channels and whether the bot is a member |
+
+### Social
+
+| Tool | Description |
+|------|-------------|
+| `social_list_accounts` | List connected social accounts (platform, username) |
+| `social_post` | Publish a post to connected accounts — accounts are connected by your human in the Mailgent console (Settings → Integrations) |
+| `social_get_post` | Check a post's status with per-platform results and live URLs |
 
 ## Multiple Identities
 
