@@ -94,12 +94,12 @@ Each identity is its own MCP server instance:
     "sales-agent": {
       "command": "npx",
       "args": ["-y", "@mailgent-dev/mcp"],
-      "env": { "MAILGENT_API_KEY": "loid-sales-key" }
+      "env": { "MAILGENT_API_KEY": "mgnt-sales-key" }
     },
     "support-agent": {
       "command": "npx",
       "args": ["-y", "@mailgent-dev/mcp"],
-      "env": { "MAILGENT_API_KEY": "loid-support-key" }
+      "env": { "MAILGENT_API_KEY": "mgnt-support-key" }
     }
   }
 }
