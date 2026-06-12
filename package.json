@@ -1,7 +1,7 @@
 {
   "name": "@mailgent-dev/mcp",
-  "version": "0.6.2",
-  "description": "MCP server for Mailgent — Identity infrastructure for AI agents",
+  "version": "0.7.0",
+  "description": "MCP server for Mailgent \u2014 Identity infrastructure for AI agents",
   "type": "module",
   "bin": {
     "mailgent-mcp": "./build/index.js"
